@@ -7,6 +7,7 @@ description = "A simple and lightweight Rust log library with support for log le
 keywords = ["log",  "logger","logging"]
 categories = ["development-tools::debugging"]
 repository = "https://github.com/bachuetech/bt_logger.git"
+readme = "README.md"
 license = "GPL"
 
 [dependencies]

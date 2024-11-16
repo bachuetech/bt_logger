@@ -1,6 +1,5 @@
-use bt_logger; 
+use bt_logger::{build_logger, LogLevel, LogTarget}; 
 use bt_logger::{log_debug, log_error, log_fatal, log_info, log_trace, log_verbose, log_warning};
-use bt_logger::logger::{build_logger, LogLevel, LogTarget};
 
 fn main() {
     build_logger("BACHUETECH", "LOGGER.TEST", LogLevel::NONE, LogTarget::STD_BOTH );

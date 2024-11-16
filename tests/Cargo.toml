@@ -1,0 +1,14 @@
+[package]
+name = "integration"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(lib_build)'] }
+
+[dependencies.log]
+path = ".."
+
+[dev-dependencies.rustversion]
+version = "1.0"
