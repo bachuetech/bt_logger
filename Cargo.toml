@@ -8,6 +8,7 @@ keywords = ["log",  "logger","logging"]
 categories = ["development-tools::debugging"]
 repository = "https://github.com/bachuetech/bt_logger.git"
 readme = "README.md"
+homepage = "https://github.com/bachuetech/bt_logger"
 license = "GPL"
 
 [dependencies]
