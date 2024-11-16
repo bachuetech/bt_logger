@@ -2,5 +2,12 @@
 name = "bt_logger"
 version = "0.1.0"
 edition = "2021"
+authors = ["calvarez <calvarez@bachuetech.biz>"]
+description = "A simple and lightweight Rust log library with support for log level"
+keywords = ["log",  "logger","logging"]
+categories = ["development-tools::debugging"]
+license = "GPL"
 
 [dependencies]
+chrono = "0.4.38"
+lazy_static = "1.5.0"
