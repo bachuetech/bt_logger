@@ -17,4 +17,4 @@ log_info!("function_name","Hello, {}", "Bachuetech User");
     * Initial Release
 
 ## License
-GPL
+GPL-3.0-only

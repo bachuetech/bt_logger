@@ -9,7 +9,7 @@ categories = ["development-tools::debugging"]
 repository = "https://github.com/bachuetech/bt_logger.git"
 readme = "README.md"
 homepage = "https://github.com/bachuetech/bt_logger"
-license = "GPL"
+license = "GPL-3.0-only"
 
 [dependencies]
 chrono = "0.4.38"
