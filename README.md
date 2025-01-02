@@ -18,7 +18,7 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
 * 0.1.0
     * Initial Release
 * 0.2.0
-    * Get a formated message for Fatal or Error as String without out logging the error.
+    * Get a formatted message for Fatal or Error as String without logging the message.
 
 ## License
 GPL-3.0-only
