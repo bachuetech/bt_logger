@@ -159,6 +159,12 @@
             }
         }
     
+        ///Get formatted message with the given level, message, and module and function name.
+        pub fn get_msg(&self, msg: &String, level: LogLevel, module: &str, function: &str) -> String { //source: &str){
+            let log_msg = self.get_formatted_msg(level, &format!("{}::{}",module, function), msg);
+            log_msg
+        }
+
         //Check if a particular log_level has to be logged based on the currect configuration
         pub fn log_this(&self, log_level: LogLevel) -> bool{
             if log_level as u8 >= self.current_log_level_value {

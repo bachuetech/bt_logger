@@ -88,3 +88,34 @@ macro_rules! log_verbose {
         }
     }};
 }    
+
+
+///Get a Fatal Error Message. get_fatal!(function name, message, message arguments)
+#[macro_export]
+macro_rules! get_fatal {
+    ($function_name:expr, $($arg:tt)+) => {{
+        let log = bt_logger::get_logger();
+        if log.log_this(bt_logger::LogLevel::FATAL){
+            let module = module_path!().to_owned();
+            let msg =  std::fmt::format(format_args!($($arg)+));
+            log.get_msg(&msg, bt_logger::LogLevel::FATAL, &module,$function_name)
+        }else{
+            "".to_owned()
+        }
+    }};
+}
+
+///Get a Fatal Error Message. get_fatal!(function name, message, message arguments)
+#[macro_export]
+macro_rules! get_error {
+    ($function_name:expr, $($arg:tt)+) => {{
+        let log = bt_logger::get_logger();
+        if log.log_this(bt_logger::LogLevel::ERROR){
+            let module = module_path!().to_owned();
+            let msg =  std::fmt::format(format_args!($($arg)+));
+            log.get_msg(&msg, bt_logger::LogLevel::ERROR, &module,$function_name)
+        }else{
+            "".to_owned()
+        }
+    }};
+}
