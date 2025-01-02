@@ -30,6 +30,8 @@
 /// log_debug!(function name, message, message arguments)
 /// log_trace!(function name, message, message arguments)
 /// log_verbose!(function name, message, message arguments)
+/// get_fatal!(function name, message, message arguments)
+/// get_error!(function name, message, message arguments)
 /// 
 /// Usage
 /// To use the bt_logger module, you would create a logger instance with the desired configuration and then use the macros to log messages at different levels. For example:
