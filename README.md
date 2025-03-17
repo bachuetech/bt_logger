@@ -19,7 +19,7 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Initial Release
 * 0.2.0
     * Get a formatted message for Fatal or Error as String without logging the message.
-* 0.2.1
+* 0.2.2
     * Move to Rust 2024 Edition
 
 ## License
