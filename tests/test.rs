@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod logger_tests {
+
 use bt_logger::{build_logger, get_error, get_fatal, LogLevel, LogTarget}; 
 use bt_logger::{log_debug, log_error, log_fatal, log_info, log_trace, log_verbose, log_warning};
 
@@ -54,4 +57,5 @@ fn test_get_error_msg(){
     build_logger("BACHUETECH", "LOGGER.TEST", LogLevel::FATAL, LogTarget::STD_OUT);    
     println!("Msg: {:?}", get_error!("test_level","ERROR MSG from {}","BT Logger"));
     
+}
 }
