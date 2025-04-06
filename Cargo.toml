@@ -1,9 +1,9 @@
 [package]
 name = "bt_logger"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2024"
 authors = ["calvarez <calvarez@bachuetech.biz>"]
-description = "A simple and lightweight Rust log library with support for log level. Can Generate Log meessage only"
+description = "A simple and lightweight Rust log library with support for log level. Can Generate Log meessage only."
 keywords = ["log",  "logger","logging"]
 categories = ["development-tools::debugging"]
 repository = "https://github.com/bachuetech/bt_logger.git"
@@ -14,3 +14,7 @@ license = "GPL-3.0-only"
 [dependencies]
 chrono = "0.4.40"
 lazy_static = "1.5.0"
+
+[dev-dependencies]
+regex = "1.11.1"
+

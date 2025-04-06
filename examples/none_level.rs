@@ -1,4 +1,4 @@
-use bt_logger::{build_logger, get_fatal, LogLevel, LogTarget}; 
+use bt_logger::{build_logger, get_error, get_fatal, LogLevel, LogTarget}; 
 use bt_logger::{log_debug, log_error, log_fatal, log_info, log_trace, log_verbose, log_warning, };
 
 fn main() {
@@ -12,5 +12,8 @@ fn main() {
     log_verbose!("test_level","VERBOSE from {}","BT Logger");
 
     let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
-    println!("{:?}", msg);
+    println!("Fatal None: '{:?}'", msg);
+
+    let msg = get_error!("test_level","ERROR from {}","BT Logger");
+    println!("ERROR None: '{:?}'", msg);        
 }

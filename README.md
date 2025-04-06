@@ -14,6 +14,7 @@ log_info!("function_name","Hello, {}", "Bachuetech User");
 let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
 ```
 
+
 ## Version History
 * 0.1.0
     * Initial Release
@@ -21,6 +22,12 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Get a formatted message for Fatal or Error as String without logging the message.
 * 0.2.2
     * Move to Rust 2024 Edition
+* 0.2.3
+    * Add passing args to builder to define log level (loglvl) and log destination (logdst)
+    * Add using environment variables to setup Log Level and Log Output
+        - Log Level Variable: btlogger_log_level
+        - Log Output (Destination) Variable: btlogger_log_output
+
 
 ## License
 GPL-3.0-only

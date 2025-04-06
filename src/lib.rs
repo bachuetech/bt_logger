@@ -47,13 +47,16 @@
 /// TAG APPLICATION CURRENT_UTC_TIME(YYYY-mm-ddTHH:MM:SS.3fz) level(one capital letter) source(module path::function)|>|message
 
     use std::sync::Mutex;
-    use std::fmt;
+    use std::{env, fmt};
     use lazy_static::lazy_static;
     use chrono::prelude::*;
 
     #[macro_use]
     pub mod macros;
 
+
+    const LOG_ENV_VAR_LOG_LEVEL: &str = "btlogger_log_level";
+    const LOG_ENV_VAR_LOG_OUTPUT: &str = "btlogger_log_output";
 
 /// LogLevel
 /// Represents the different levels of log severity. The values are ordered from lowest to highest severity.
@@ -92,7 +95,23 @@
             }
         }
     }
+
+    impl LogLevel {
+        fn from_str(log_level: &str) -> LogLevel{
+            match log_level.to_uppercase().as_str(){
+                "N" | "NONE" => LogLevel::NONE,
+                "F" | "FATAL" => LogLevel::FATAL,
+                "E" | "ERR" | "ERROR" => LogLevel::ERROR,
+                "W" | "WARN" | "WARNING"=> LogLevel::WARN,
+                "I" | "INFO" => LogLevel::INFO,
+                "D" | "DEBUG" => LogLevel::DEBUG,
+                "T" | "TRACE" => LogLevel::TRACE,
+                "V" | "VERB" | "VERBOSE"=> LogLevel::VERBOSE,
+                _ => LogLevel::NONE,
+            }
+        }
     
+    }
 /// LogTarget
 /// Represents the different output destinations for log messages.
 /// STD_ERROR: Logs to stderr
@@ -105,6 +124,15 @@
         STD_BOTH,
     }
     
+    impl LogTarget {
+        pub fn from_str(log_destination: &str) -> LogTarget{
+            match log_destination.to_uppercase().as_str(){
+                "ERR" | "ERROR" | "E" => LogTarget::STD_ERROR,
+                "STANDARD" | "STD" | "STDOUT" | "S" => LogTarget::STD_OUT,
+                _ => LogTarget::STD_ERROR
+            }
+        }
+    }
 /// Logger
 /// Represents a logger instance with its configuration.
 /// log_tag: The tag used in log messages
@@ -154,10 +182,10 @@
             let log_msg = self.get_formatted_msg(level, &format!("{}::{}",module, function), msg);
     
             match self.output_destination {
-                LogTarget::STD_ERROR => {self.log_stderr(&log_msg);},
-                LogTarget::STD_OUT => {self.log_stdout(&log_msg);},
+                LogTarget::STD_ERROR =>{self.log_stderr(&log_msg);},
+                LogTarget::STD_OUT =>  {self.log_stdout(&log_msg);},
                 LogTarget::STD_BOTH => {  self.log_stderr(&log_msg);
-                                               self.log_stdout(&log_msg); }, 
+                                          self.log_stdout(&log_msg); }, 
             }
         }
     
@@ -172,7 +200,6 @@
             if log_level as u8 >= self.current_log_level_value {
                 return true
             }
-    
             false
         }
     }
@@ -183,13 +210,80 @@
     
 
     ///Build the logger. Run this function first
+/// Configures a global logger instance based on the provided environment variables and options.
+///
+/// This function takes in a tag, an application name, a log level, and a log target,
+/// and uses the `LOG_ENV_VAR_LOG_LEVEL` (btlogger_log_level) and `LOG_ENV_VAR_LOG_OUTPUT` (btlogger_log_output) environment variables
+/// to override or set default values for the logger configuration.
+///
+/// If no environment variables are set, it will use the provided options to configure the logger.
+///
+/// # Arguments
+///
+/// * `tag`: The tag or identifier for the logger.
+/// * `application`: The application name associated with the logger.
+/// * `level`:  An enum log level to use for this logger instance.
+/// * `output`:  An enum target to output logs to (e.g. standard error, file, etc.).
     pub fn build_logger(tag: &str, application: &str, level: LogLevel, output:LogTarget){
+        let int_level: LogLevel;
+        let int_dest: LogTarget;
+        match env::var(LOG_ENV_VAR_LOG_LEVEL){
+            Ok(levll) => int_level = LogLevel::from_str(&levll),
+            Err(_) => int_level = level,
+        }
+
+        match env::var(LOG_ENV_VAR_LOG_OUTPUT){
+            Ok(levlo) => int_dest = LogTarget::from_str(&levlo),
+            Err(_) => int_dest = output,
+        }
+
         let mut _logger = LOGGER.lock().unwrap();
         if _logger.is_none(){
-            *_logger = Some(Logger::new(tag, application, level, output));
+            *_logger = Some(Logger::new(tag, application, int_level, int_dest));
         }
     }
     
+    ///Build the logger. Run this function first
+/// Builds a logger configuration based on the provided arguments.
+///
+/// This function takes in a tag and an application name as required parameters,
+/// and uses the provided vector of strings to override or set default values for
+/// the log level and target.
+///
+/// If no arguments are provided, it will build a logger with the verbose log level
+/// and standard error target. Otherwise, it will use the specified argument values
+/// to configure the logger.
+///
+/// # Arguments
+///
+/// * `tag`: The tag or identifier for the logger.
+/// * `application`: The application name associated with the logger.
+/// * `args`: A vector of strings containing key-value pairs for configuring the logger. The key is "LOGLVL" or "LOGDST", 
+///           it sets the log level (level) or output target (out_target)
+    pub fn build_logger_args(tag: &str, application: &str, args: Vec<String>){
+        if args.len() < 1{
+            build_logger(tag, application, LogLevel::VERBOSE, LogTarget::STD_ERROR );
+        }else{
+            let mut level = LogLevel::VERBOSE;
+            let mut out_target = LogTarget::STD_ERROR;
+            for param in &args{
+                match param.split_once("="){
+                    Some(t) => {
+                        match t.0.to_uppercase().as_str() {
+                            "LOGLVL" => level = LogLevel::from_str(t.1),
+                            "LOGDST" => out_target = LogTarget::from_str(t.1),
+                            _ => (),
+                        }
+                    }
+                    None => () ,
+                }
+
+            }
+
+            build_logger(tag, application, level, out_target);
+        }
+    }
+
     pub fn get_logger() -> Logger{
         let _logger = LOGGER.lock().unwrap();
         _logger.clone().unwrap()
