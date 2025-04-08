@@ -7,8 +7,8 @@ mod logger_tests {
 
     #[test]
     fn test_info_both(){
-        build_logger("BACHUETECH", "LOGGER.TEST", LogLevel::VERBOSE, LogTarget::STD_BOTH );        
         println!("test {} {:?}",LogLevel::VERBOSE, LogTarget::STD_BOTH);
+        build_logger("BACHUETECH", "LOGGER.TEST", LogLevel::VERBOSE, LogTarget::STD_BOTH );        
         log_fatal!("test_level","FATAL from {}","BT Logger");
         log_error!("test_level","ERROR from {}","BT Logger");
         log_warning!("test_level","WARN from {}","BT Logger");

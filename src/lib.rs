@@ -260,13 +260,13 @@
 /// * `application`: The application name associated with the logger.
 /// * `args`: A vector of strings containing key-value pairs for configuring the logger. The key is "LOGLVL" or "LOGDST", 
 ///           it sets the log level (level) or output target (out_target)
-    pub fn build_logger_args(tag: &str, application: &str, args: Vec<String>){
+    pub fn build_logger_args(tag: &str, application: &str, args: &Vec<String>){
         if args.len() < 1{
             build_logger(tag, application, LogLevel::VERBOSE, LogTarget::STD_ERROR );
         }else{
             let mut level = LogLevel::VERBOSE;
             let mut out_target = LogTarget::STD_ERROR;
-            for param in &args{
+            for param in args{
                 match param.split_once("="){
                     Some(t) => {
                         match t.0.to_uppercase().as_str() {

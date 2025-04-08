@@ -15,7 +15,7 @@ fn main() {
         build_logger("BACHUETECH", "BT.AI.UI", LogLevel::VERBOSE, LogTarget::STD_ERROR );
     }
 
-    build_logger_args("BACHUETECH", "LOGGER.TEST", args );
+    build_logger_args("BACHUETECH", "LOGGER.TEST", &args );
     log_fatal!("test_level","FATAL from {}","BT Logger");
     log_error!("test_level","ERROR from {}","BT Logger");
     log_warning!("test_level","WARN from {}","BT Logger");
