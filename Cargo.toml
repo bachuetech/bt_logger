@@ -1,6 +1,6 @@
 [package]
 name = "bt_logger"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 authors = ["calvarez <calvarez@bachuetech.biz>"]
 description = "A simple and lightweight Rust log library with support for log level. Can Generate Log meessage only."

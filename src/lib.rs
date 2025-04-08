@@ -127,7 +127,7 @@
     impl LogTarget {
         pub fn from_str(log_destination: &str) -> LogTarget{
             match log_destination.to_uppercase().as_str(){
-                "ERR" | "ERROR" | "E" => LogTarget::STD_ERROR,
+                "ERR" | "ERROR" | "STDERR" | "E" => LogTarget::STD_ERROR,
                 "STANDARD" | "STD" | "STDOUT" | "S" => LogTarget::STD_OUT,
                 _ => LogTarget::STD_ERROR
             }

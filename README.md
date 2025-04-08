@@ -26,6 +26,8 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Add using environment variables to setup Log Level and Log Output
         - Log Level Variable: btlogger_log_level
         - Log Output (Destination) Variable: btlogger_log_output
+* 0.2.4
+    * Add STDERR as a string option for the destination from the env variable (btlogger_log_output) or args (logdst)
 
 ## License
 GPL-3.0-only
