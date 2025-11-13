@@ -7,7 +7,7 @@ A simple and lightweight logger for Rust with various features such as logging t
 ## Usage
 To use the bt_logger module, you would create a logger instance with the desired configuration and then use the macros to log messages at different levels. For example:
 ```
-build_logger("BACHUETECH", "My Application", LogLevel::INFO, LogTarget::StdOut);
+build_logger("BACHUETECH", "My Application", LogLevel::INFO, LogTarget::StdOut, Some("../bt_logs/bachuetech_log.log".to_owned()) );
  .......
 log_info!("function_name","Hello, {}", "Bachuetech User");
  .......
@@ -34,6 +34,10 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Added Target Log Destination None
     * Can now redirect any log level to a file, even if destination is None
     * Log and Save to a file will run async
+* 0.3.1
+    * Internal changes to improve performance. 
+    * Remove Mutex in favor of Lazy.
+    * Fail silently if logger is not initialized. println a warning
 
 
 

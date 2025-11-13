@@ -50,11 +50,9 @@
 
     use std::path::PathBuf;
     use std::str::FromStr;
-    use std::sync::Mutex;
     use std::{env, fmt, fs};
-    use lazy_static::lazy_static;
     use chrono::prelude::*;
-    use once_cell::sync::Lazy;
+    use once_cell::sync::{Lazy, OnceCell};
     use tokio::runtime::Runtime;
 
     use crate::io_utils::log_to_file;
@@ -63,15 +61,15 @@
     pub mod macros;
 
 
-    const LOG_ENV_VAR_LOG_LEVEL: &str = "btlogger_log_level";
-    const LOG_ENV_VAR_LOG_OUTPUT: &str = "btlogger_log_output";
+const LOG_ENV_VAR_LOG_LEVEL: &str = "btlogger_log_level";
+const LOG_ENV_VAR_LOG_OUTPUT: &str = "btlogger_log_output";
 
 /// Create a static runtime
 static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
     Runtime::new().expect("Failed to create Tokio runtime")
 });
 
-
+static LOGGER: OnceCell<Logger> = OnceCell::new();
 
 /// LogLevel
 /// Represents the different levels of log severity. The values are ordered from lowest to highest severity.
@@ -133,6 +131,7 @@ static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
 /// STD_OUT: Logs to stdout
 /// STD_BOTH: Logs to both stdout and stderr
 /// NONE: Does not send log to any of the STD.
+    #[allow(non_camel_case_types)]
     #[derive(Debug, Clone)]
     pub enum LogTarget{
         STD_ERROR,
@@ -188,7 +187,7 @@ static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
         }
     
         ///Returns the current time as a string in the format "YYYY-MM-DDTHH:MM:SS.SSSZ".
-        fn get_current_time(&self) -> String{
+        pub(crate) fn get_current_time() -> String{
             let current_time: DateTime<Utc> = Utc::now();
             // Format the current time as a string
             current_time.format("%Y-%m-%dT%H:%M:%S%.3f%z").to_string()
@@ -196,7 +195,7 @@ static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
     
         ///Formats a log message with the given level, source, and message.
         fn get_formatted_msg(&self, level: LogLevel, source: &str, msg: &String) -> String{
-            let current_time = self.get_current_time();
+            let current_time = Logger::get_current_time();
             format!("{} {} {} {} {}|>|{}", self.log_tag, self.log_app, current_time, level, source, msg)
         }
    
@@ -235,9 +234,9 @@ static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
         }
     }
     
-    lazy_static! {
+    /*lazy_static! {
         static ref LOGGER: Mutex<Option<Logger>> = Mutex::new(None);
-    }
+    }*/
 
     ///Logs a message to stdout.
     fn log_stdout(message: &String ){
@@ -248,6 +247,22 @@ static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
     fn log_stderr(message: &String){
         eprintln!("{}", message);
     }    
+
+    ///Build the logger. Run this function first
+/// Configures a global logger instance based on the provided environment variables and options.
+///
+/// This function takes in a tag, an application name, a log level, and a log target (output), and optional destination file.
+///
+/// # Arguments
+///
+/// * `tag`: The tag or identifier for the logger.
+/// * `application`: The application name associated with the logger.
+/// * `level`:  An enum log level to use for this logger instance.
+/// * `output`:  An enum target to output logs to (e.g. standard error, file, etc.).
+/// * `path_file`: Optional Absolute path to the file to log as String. If path is invalid or file cannot be open then is ignored
+    pub fn build_logger(tag: &str, application: &str, level: LogLevel, output:LogTarget, path_file: Option<String>){
+        let _ = LOGGER.set(Logger::new(tag, application, level, output, path_file));
+    }
 
     ///Build the logger using environment variables and default to parameters. Run this function first
 /// Configures a global logger instance based on the provided environment variables and options.
@@ -281,38 +296,7 @@ static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
 
         build_logger(tag, application, int_level, int_dest, path_file);
     }
-
-    ///Build the logger. Run this function first
-/// Configures a global logger instance based on the provided environment variables and options.
-///
-/// This function takes in a tag, an application name, a log level, and a log target (output), and optional destination file.
-///
-/// # Arguments
-///
-/// * `tag`: The tag or identifier for the logger.
-/// * `application`: The application name associated with the logger.
-/// * `level`:  An enum log level to use for this logger instance.
-/// * `output`:  An enum target to output logs to (e.g. standard error, file, etc.).
-/// * `path_file`: Optional Absolute path to the file to log as String. If path is invalid or file cannot be open then is ignored
-    pub fn build_logger(tag: &str, application: &str, level: LogLevel, output:LogTarget, path_file: Option<String>){
-        /*let int_level: LogLevel;
-        let int_dest: LogTarget;
-        match env::var(LOG_ENV_VAR_LOG_LEVEL){
-            Ok(levll) => int_level = LogLevel::from_str(&levll),
-            Err(_) => int_level = level,
-        }
-
-        match env::var(LOG_ENV_VAR_LOG_OUTPUT){
-            Ok(levlo) => int_dest = LogTarget::from_str(&levlo),
-            Err(_) => int_dest = output,
-        }*/
-
-        let mut _logger = LOGGER.lock().unwrap();
-        if _logger.is_none(){
-            *_logger = Some(Logger::new(tag, application, level, output, path_file));
-        }
-    }
-    
+   
     ///Build the logger. Run this function first
 /// Builds a logger configuration based on the provided arguments.
 ///
@@ -357,7 +341,14 @@ static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
         }
     }
 
-    pub fn get_logger() -> Logger{
-        let _logger = LOGGER.lock().unwrap();
-        _logger.clone().unwrap()
+    pub fn get_logger() -> Option<Logger>{
+        /*let _logger = LOGGER.lock().unwrap();
+        _logger.clone().unwrap()*/
+        if LOGGER.get().is_some() {
+            return Some(LOGGER.get().unwrap().clone())
+        }else{
+            let l_msg = format!("{} {} {} {} {}|>|{}", "BACHUETECH", "bt_logger", Logger::get_current_time(), LogLevel::WARN, "get_logger", "BT Logger is not initialized");
+            println!("{}", l_msg);
+            None
+        }
     }
