@@ -7,12 +7,12 @@ fn main() {
     // Get all command line arguments
     let args: Vec<String> = env::args().collect();
     if args.len() < 1{
-        build_logger("BACHUETECH", "BT.AI.UI", LogLevel::VERBOSE, LogTarget::STD_ERROR );
+        build_logger("BACHUETECH", "BT.AI.UI", LogLevel::VERBOSE, LogTarget::STD_ERROR, None);
     }else{
         
         let p = args.get(1);
         println!("param: {:?}",p);
-        build_logger("BACHUETECH", "BT.AI.UI", LogLevel::VERBOSE, LogTarget::STD_ERROR );
+        build_logger("BACHUETECH", "BT.AI.UI", LogLevel::VERBOSE, LogTarget::STD_ERROR, None );
     }
 
     build_logger_args("BACHUETECH", "LOGGER.TEST", &args );

@@ -30,6 +30,12 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Add STDERR as a string option for the destination from the env variable (btlogger_log_output) or args (logdst)
 * 0.2.5
     * Make args a reference &args
+* 0.3.0
+    * Added Target Log Destination None
+    * Can now redirect any log level to a file, even if destination is None
+    * Log and Save to a file will run async
+
+
 
 ## License
 GPL-3.0-only

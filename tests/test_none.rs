@@ -5,7 +5,7 @@ mod logger_tests_none {
     #[test]
     fn test_get_error_msg_when_none(){
         println!("test {} GET Msg",LogLevel::ERROR);
-        build_logger("BACHUETECH", "LOGGER.TEST", LogLevel::NONE, LogTarget::STD_OUT);          
+        build_logger("BACHUETECH", "LOGGER.TEST", LogLevel::NONE, LogTarget::STD_OUT, None);          
         let msg = get_error!("test_level","ERROR MSG from {}","BT Logger");
         println!("Msg: {:?}", &msg);
         assert_eq!(msg,"" );

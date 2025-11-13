@@ -105,7 +105,7 @@ macro_rules! get_fatal {
     }};
 }
 
-///Get a Fatal Error Message. get_fatal!(function name, message, message arguments)
+///Get a Error Message. get_fatal!(function name, message, message arguments)
 #[macro_export]
 macro_rules! get_error {
     ($function_name:expr, $($arg:tt)+) => {{

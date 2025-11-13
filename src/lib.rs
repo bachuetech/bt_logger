@@ -46,10 +46,18 @@
 /// The log output is:
 /// TAG APPLICATION CURRENT_UTC_TIME(YYYY-mm-ddTHH:MM:SS.3fz) level(one capital letter) source(module path::function)|>|message
 
+    pub(crate) mod io_utils;
+
+    use std::path::PathBuf;
+    use std::str::FromStr;
     use std::sync::Mutex;
-    use std::{env, fmt};
+    use std::{env, fmt, fs};
     use lazy_static::lazy_static;
     use chrono::prelude::*;
+    use once_cell::sync::Lazy;
+    use tokio::runtime::Runtime;
+
+    use crate::io_utils::log_to_file;
 
     #[macro_use]
     pub mod macros;
@@ -57,6 +65,13 @@
 
     const LOG_ENV_VAR_LOG_LEVEL: &str = "btlogger_log_level";
     const LOG_ENV_VAR_LOG_OUTPUT: &str = "btlogger_log_output";
+
+/// Create a static runtime
+static ASYNC_RUNTIME: Lazy<Runtime> = Lazy::new(|| {
+    Runtime::new().expect("Failed to create Tokio runtime")
+});
+
+
 
 /// LogLevel
 /// Represents the different levels of log severity. The values are ordered from lowest to highest severity.
@@ -117,11 +132,13 @@
 /// STD_ERROR: Logs to stderr
 /// STD_OUT: Logs to stdout
 /// STD_BOTH: Logs to both stdout and stderr
+/// NONE: Does not send log to any of the STD.
     #[derive(Debug, Clone)]
     pub enum LogTarget{
         STD_ERROR,
         STD_OUT,
         STD_BOTH,
+        NONE,
     }
     
     impl LogTarget {
@@ -129,6 +146,7 @@
             match log_destination.to_uppercase().as_str(){
                 "ERR" | "ERROR" | "STDERR" | "E" => LogTarget::STD_ERROR,
                 "STANDARD" | "STD" | "STDOUT" | "S" => LogTarget::STD_OUT,
+                "NONE" | "N" => LogTarget::NONE,
                 _ => LogTarget::STD_ERROR
             }
         }
@@ -145,13 +163,28 @@
         log_app: String,
         current_log_level_value: u8,
         output_destination: LogTarget,
+        destination_file: Option<String>,
     }
     
     impl Logger{
         ///Creates a new logger instance with the given configuration.
-        fn new(tag: &str, application: &str, level: LogLevel, output:LogTarget) -> Self{
+        ///If file cannot be open then it will be ignored as None.
+        fn new(tag: &str, application: &str, level: LogLevel, output:LogTarget, destination_file: Option<String>) -> Self{
+            let dest = if destination_file.is_some() {
+                match PathBuf::from_str(&destination_file.unwrap()){
+                    Ok(file_path) => {
+                                //if let Some(fp) = file_path.to_str(){
+                                if let Some(parent) = file_path.parent() {
+                                    if fs::create_dir_all(parent).is_err(){ None } else { let p: String = file_path.to_string_lossy().into(); Some(p)}
+                                }else{ None }
+                    },
+                    Err(_) => None,
+                }
+            }else {None};
+
             Logger { log_tag: tag.to_owned(), log_app: application.to_owned(),
-                     current_log_level_value: level as u8, output_destination: output}
+                     current_log_level_value: level as u8, output_destination: output,
+                     destination_file: dest.into() }
         }
     
         ///Returns the current time as a string in the format "YYYY-MM-DDTHH:MM:SS.SSSZ".
@@ -163,30 +196,28 @@
     
         ///Formats a log message with the given level, source, and message.
         fn get_formatted_msg(&self, level: LogLevel, source: &str, msg: &String) -> String{
-            format!("{} {} {} {} {}|>|{}", self.log_tag, self.log_app, self.get_current_time(), level, source, msg)
+            let current_time = self.get_current_time();
+            format!("{} {} {} {} {}|>|{}", self.log_tag, self.log_app, current_time, level, source, msg)
         }
-    
-        ///Logs a message to stdout.
-        fn log_stdout(&self, message: &String ){
-            println!("{}", message);
-        }
-    
-        ///Logs a message to stderr.
-        fn log_stderr(&self, message: &String){
-            eprintln!("{}", message);
-        }
-    
+   
         ///Logs a message with the given level, message, and module and function name.
         pub fn log_msg(&self, msg: &String, level: LogLevel, module: &str, function: &str){ //source: &str){
-    
-            let log_msg = self.get_formatted_msg(level, &format!("{}::{}",module, function), msg);
-    
-            match self.output_destination {
-                LogTarget::STD_ERROR =>{self.log_stderr(&log_msg);},
-                LogTarget::STD_OUT =>  {self.log_stdout(&log_msg);},
-                LogTarget::STD_BOTH => {  self.log_stderr(&log_msg);
-                                          self.log_stdout(&log_msg); }, 
-            }
+           let log_msg = self.get_formatted_msg(level, &format!("{}::{}",module, function), msg);
+           let output_dest = self.output_destination.clone();
+           let dest_file = self.destination_file.clone();
+
+            ASYNC_RUNTIME.spawn(async move{
+                match output_dest {
+                    LogTarget::STD_ERROR =>{log_stderr(&log_msg);},
+                    LogTarget::STD_OUT =>  {log_stdout(&log_msg);},
+                    LogTarget::STD_BOTH => {log_stderr(&log_msg);
+                                            log_stdout(&log_msg); },
+                    LogTarget::NONE => (),
+                }
+                if let Some(df) = dest_file {
+                    log_to_file(df.as_str(),log_msg.as_str());
+                }
+            });
         }
     
         ///Get formatted message with the given level, message, and module and function name.
@@ -207,9 +238,18 @@
     lazy_static! {
         static ref LOGGER: Mutex<Option<Logger>> = Mutex::new(None);
     }
-    
 
-    ///Build the logger. Run this function first
+    ///Logs a message to stdout.
+    fn log_stdout(message: &String ){
+        println!("{}", message);
+    }
+
+    ///Logs a message to stderr.
+    fn log_stderr(message: &String){
+        eprintln!("{}", message);
+    }    
+
+    ///Build the logger using environment variables and default to parameters. Run this function first
 /// Configures a global logger instance based on the provided environment variables and options.
 ///
 /// This function takes in a tag, an application name, a log level, and a log target,
@@ -224,7 +264,8 @@
 /// * `application`: The application name associated with the logger.
 /// * `level`:  An enum log level to use for this logger instance.
 /// * `output`:  An enum target to output logs to (e.g. standard error, file, etc.).
-    pub fn build_logger(tag: &str, application: &str, level: LogLevel, output:LogTarget){
+/// * `path_file`: Optional Absolute path to the file to log as String. If path is invalid or file cannot be open then is ignored
+    pub fn build_logger_env(tag: &str, application: &str, level: LogLevel, output:LogTarget, path_file: Option<String>){
         let int_level: LogLevel;
         let int_dest: LogTarget;
         match env::var(LOG_ENV_VAR_LOG_LEVEL){
@@ -237,9 +278,38 @@
             Err(_) => int_dest = output,
         }
 
+
+        build_logger(tag, application, int_level, int_dest, path_file);
+    }
+
+    ///Build the logger. Run this function first
+/// Configures a global logger instance based on the provided environment variables and options.
+///
+/// This function takes in a tag, an application name, a log level, and a log target (output), and optional destination file.
+///
+/// # Arguments
+///
+/// * `tag`: The tag or identifier for the logger.
+/// * `application`: The application name associated with the logger.
+/// * `level`:  An enum log level to use for this logger instance.
+/// * `output`:  An enum target to output logs to (e.g. standard error, file, etc.).
+/// * `path_file`: Optional Absolute path to the file to log as String. If path is invalid or file cannot be open then is ignored
+    pub fn build_logger(tag: &str, application: &str, level: LogLevel, output:LogTarget, path_file: Option<String>){
+        /*let int_level: LogLevel;
+        let int_dest: LogTarget;
+        match env::var(LOG_ENV_VAR_LOG_LEVEL){
+            Ok(levll) => int_level = LogLevel::from_str(&levll),
+            Err(_) => int_level = level,
+        }
+
+        match env::var(LOG_ENV_VAR_LOG_OUTPUT){
+            Ok(levlo) => int_dest = LogTarget::from_str(&levlo),
+            Err(_) => int_dest = output,
+        }*/
+
         let mut _logger = LOGGER.lock().unwrap();
         if _logger.is_none(){
-            *_logger = Some(Logger::new(tag, application, int_level, int_dest));
+            *_logger = Some(Logger::new(tag, application, level, output, path_file));
         }
     }
     
@@ -250,7 +320,7 @@
 /// and uses the provided vector of strings to override or set default values for
 /// the log level and target.
 ///
-/// If no arguments are provided, it will build a logger with the verbose log level
+/// If no arguments are provided, it will build a logger with the error log level
 /// and standard error target. Otherwise, it will use the specified argument values
 /// to configure the logger.
 ///
@@ -258,20 +328,24 @@
 ///
 /// * `tag`: The tag or identifier for the logger.
 /// * `application`: The application name associated with the logger.
-/// * `args`: A vector of strings containing key-value pairs for configuring the logger. The key is "LOGLVL" or "LOGDST", 
-///           it sets the log level (level) or output target (out_target)
+/// * `args`: A vector of strings containing key-value pairs for configuring the logger. The keys are "LOGLVL" or "LOGDST". They set: 
+///           LOGLVL: the log level (level)
+///           LOGDST: output target (out_target)
+///           LOGFILE: Absolute path to the file to log as String
     pub fn build_logger_args(tag: &str, application: &str, args: &Vec<String>){
         if args.len() < 1{
-            build_logger(tag, application, LogLevel::VERBOSE, LogTarget::STD_ERROR );
+            build_logger(tag, application, LogLevel::ERROR, LogTarget::STD_ERROR, None );
         }else{
-            let mut level = LogLevel::VERBOSE;
+            let mut level = LogLevel::ERROR;
             let mut out_target = LogTarget::STD_ERROR;
+            let mut dest_file = None;
             for param in args{
                 match param.split_once("="){
                     Some(t) => {
                         match t.0.to_uppercase().as_str() {
                             "LOGLVL" => level = LogLevel::from_str(t.1),
                             "LOGDST" => out_target = LogTarget::from_str(t.1),
+                            "LOGFILE" => dest_file = Some(t.1.to_owned()),
                             _ => (),
                         }
                     }
@@ -279,8 +353,7 @@
                 }
 
             }
-
-            build_logger(tag, application, level, out_target);
+            build_logger_env(tag, application, level, out_target, dest_file);
         }
     }
 
