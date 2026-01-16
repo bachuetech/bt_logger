@@ -144,7 +144,7 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         pub fn from_str(log_destination: &str) -> LogTarget{
             match log_destination.to_uppercase().as_str(){
                 "ERR" | "ERROR" | "STDERR" | "E" => LogTarget::STD_ERROR,
-                "STANDARD" | "STD" | "STDOUT" | "S" => LogTarget::STD_OUT,
+                "STANDARD" | "STD" | "STDOUT" | "S" | "O" => LogTarget::STD_OUT,
                 "NONE" | "N" => LogTarget::NONE,
                 _ => LogTarget::STD_ERROR
             }
@@ -277,8 +277,8 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
 ///
 /// * `tag`: The tag or identifier for the logger.
 /// * `application`: The application name associated with the logger.
-/// * `level`:  An enum log level to use for this logger instance.
-/// * `output`:  An enum target to output logs to (e.g. standard error, file, etc.).
+/// * `level`:  An enum default log level to use for this logger instance.
+/// * `output`:  An enum default target to output logs to (e.g. standard error, file, etc.).
 /// * `path_file`: Optional Absolute path to the file to log as String. If path is invalid or file cannot be open then is ignored
     pub fn build_logger_env(tag: &str, application: &str, level: LogLevel, output:LogTarget, path_file: Option<String>){
         let int_level: LogLevel;
@@ -318,9 +318,19 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
 ///           LOGFILE: Absolute path to the file to log as String
     pub fn build_logger_args(tag: &str, application: &str, args: &Vec<String>){
         if args.len() < 1{
-            build_logger(tag, application, LogLevel::ERROR, LogTarget::STD_ERROR, None );
+            //build_logger(tag, application, LogLevel::ERROR, LogTarget::STD_ERROR, None );
+            #[cfg(debug_assertions)]
+                build_logger(tag, application, LogLevel::VERBOSE, LogTarget::STD_OUT, None);
+            #[cfg(not(debug_assertions))]
+                build_logger(tag, application, LogLevel::WARN, LogTarget::STD_ERROR, None);            
         }else{
-            let mut level = LogLevel::ERROR;
+            #[cfg(debug_assertions)]
+            let mut level = LogLevel::VERBOSE;
+            #[cfg(not(debug_assertions))]
+            let mut level = LogLevel::WARN;
+            #[cfg(debug_assertions)]
+            let mut out_target = LogTarget::STD_OUT;
+            #[cfg(not(debug_assertions))]
             let mut out_target = LogTarget::STD_ERROR;
             let mut dest_file = None;
             for param in args{
