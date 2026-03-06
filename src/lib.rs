@@ -325,13 +325,15 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
                 build_logger(tag, application, LogLevel::WARN, LogTarget::STD_ERROR, None);            
         }else{
             #[cfg(debug_assertions)]
-            let mut level = LogLevel::VERBOSE;
+                let mut level = LogLevel::VERBOSE;
             #[cfg(not(debug_assertions))]
-            let mut level = LogLevel::WARN;
+                let mut level = LogLevel::WARN;
+                
             #[cfg(debug_assertions)]
-            let mut out_target = LogTarget::STD_OUT;
+                let mut out_target = LogTarget::STD_OUT;
             #[cfg(not(debug_assertions))]
-            let mut out_target = LogTarget::STD_ERROR;
+                let mut out_target = LogTarget::STD_ERROR;
+
             let mut dest_file = None;
             for param in args{
                 match param.split_once("="){

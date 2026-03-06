@@ -40,6 +40,8 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Fail silently if logger is not initialized. println a warning
 * 0.3.2
     * Internal changes, when using build_logger_args, to default to VERBOSE, STD_OUTPUT (dev) or WARN STD_ERROR (release)
+* 0.3.3
+    * Update Dependencies    
 
 
 
