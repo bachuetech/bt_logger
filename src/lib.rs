@@ -51,8 +51,10 @@
     use std::path::PathBuf;
     use std::str::FromStr;
     use std::{env, fmt, fs};
-    use chrono::prelude::*;
+    //use chrono::prelude::*;
     use once_cell::sync::{Lazy, OnceCell};
+    use time::OffsetDateTime;
+    use time::macros::format_description;
     use tokio::runtime::Runtime;
 
     use crate::io_utils::log_to_file;
@@ -60,6 +62,9 @@
     #[macro_use]
     pub mod macros;
 
+const TIMESTAMP_FORMAT: &[time::format_description::FormatItem<'static>] = format_description!(
+    "[year]-[month]-[day]T[hour]:[minute]:[second].[subsecond digits:9]Z"
+);
 
 const LOG_ENV_VAR_LOG_LEVEL: &str = "btlogger_log_level";
 const LOG_ENV_VAR_LOG_OUTPUT: &str = "btlogger_log_output";
@@ -187,21 +192,22 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         }
     
         ///Returns the current time as a string in the format "YYYY-MM-DDTHH:MM:SS.SSSZ".
-        pub(crate) fn get_current_time() -> String{
-            let current_time: DateTime<Utc> = Utc::now();
+        pub(crate) fn get_current_time(now: OffsetDateTime) -> String{
+            now.format(TIMESTAMP_FORMAT).unwrap_or(now.to_string())
             // Format the current time as a string
-            current_time.format("%Y-%m-%dT%H:%M:%S%.3f%z").to_string()
+            //current_time.format("%Y-%m-%dT%H:%M:%S%.3f%z").to_string()
         }
     
         ///Formats a log message with the given level, source, and message.
-        fn get_formatted_msg(&self, level: LogLevel, source: &str, msg: &String) -> String{
-            let current_time = Logger::get_current_time();
+        fn get_formatted_msg(&self, current_time: String, level: LogLevel, source: &str, msg: &String) -> String{
+            //let current_time = Logger::get_current_time();
             format!("{} {} {} {} {}|>|{}", self.log_tag, self.log_app, current_time, level, source, msg)
         }
    
         ///Logs a message with the given level, message, and module and function name.
-        pub fn log_msg(&self, msg: &String, level: LogLevel, module: &str, function: &str){ //source: &str){
-           let log_msg = self.get_formatted_msg(level, &format!("{}::{}",module, function), msg);
+        pub fn log_msg(&self, now: OffsetDateTime, msg: &String, level: LogLevel, module: &str, function: &str){ //source: &str){
+           let formated_time = now.format(TIMESTAMP_FORMAT).unwrap_or(now.to_string());
+           let log_msg = self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, function), msg);
            let output_dest = self.output_destination.clone();
            let dest_file = self.destination_file.clone();
 
@@ -220,8 +226,9 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         }
     
         ///Get formatted message with the given level, message, and module and function name.
-        pub fn get_msg(&self, msg: &String, level: LogLevel, module: &str, function: &str) -> String { //source: &str){
-            let log_msg = self.get_formatted_msg(level, &format!("{}::{}",module, function), msg);
+        pub fn get_msg(&self, now: OffsetDateTime, msg: &String, level: LogLevel, module: &str, function: &str) -> String { //source: &str){
+            let formated_time = now.format(TIMESTAMP_FORMAT).unwrap_or(now.to_string());
+            let log_msg = self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, function), msg);
             log_msg
         }
 
@@ -359,7 +366,7 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         if LOGGER.get().is_some() {
             return Some(LOGGER.get().unwrap().clone())
         }else{
-            let l_msg = format!("{} {} {} {} {}|>|{}", "BACHUETECH", "bt_logger", Logger::get_current_time(), LogLevel::WARN, "get_logger", "BT Logger is not initialized");
+            let l_msg = format!("{} {} {} {} {}|>|{}", "BACHUETECH", "bt_logger", Logger::get_current_time(time::OffsetDateTime::now_utc()), LogLevel::WARN, "get_logger", "BT Logger is not initialized");
             println!("{}", l_msg);
             None
         }

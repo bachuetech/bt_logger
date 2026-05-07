@@ -42,7 +42,10 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Internal changes, when using build_logger_args, to default to VERBOSE, STD_OUTPUT (dev) or WARN STD_ERROR (release)
 * 0.3.3
     * Update Dependencies    
-
+* 0.3.4
+    * Change the location of time capture to increase the accuracy of the timestamp
+    * Move from chrono to time crate.
+    * Update Dependencies   
 
 
 ## License
