@@ -45,7 +45,9 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
 * 0.3.4
     * Change the location of time capture to increase the accuracy of the timestamp
     * Move from chrono to time crate.
-    * Update Dependencies   
+    * Update Dependencies
+* 0.3.5
+    * Add internal time crate (re-exports time as _bt_loggter_crate_time), no required imports in caller.  
 
 
 ## License

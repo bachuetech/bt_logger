@@ -4,7 +4,7 @@ macro_rules! log_fatal {
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::FATAL){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.log_msg(now, &msg, bt_logger::LogLevel::FATAL, &module,$function_name);
@@ -19,7 +19,7 @@ macro_rules! log_error {
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::ERROR){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.log_msg(now, &msg, bt_logger::LogLevel::ERROR, &module, $function_name);
@@ -34,7 +34,7 @@ macro_rules! log_warning{
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::WARN){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.log_msg(now, &msg, bt_logger::LogLevel::WARN, &module,$function_name);
@@ -49,7 +49,7 @@ macro_rules! log_info {
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::INFO){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.log_msg(now, &msg, bt_logger::LogLevel::INFO, &module,$function_name);
@@ -64,7 +64,7 @@ macro_rules! log_debug {
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::DEBUG){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.log_msg(now, &msg, bt_logger::LogLevel::DEBUG, &module,$function_name);
@@ -79,7 +79,7 @@ macro_rules! log_trace {
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::TRACE){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.log_msg(now, &msg, bt_logger::LogLevel::TRACE, &module,$function_name);
@@ -94,7 +94,7 @@ macro_rules! log_verbose {
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::VERBOSE){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.log_msg(now, &msg, bt_logger::LogLevel::VERBOSE, &module,$function_name);
@@ -110,7 +110,7 @@ macro_rules! get_fatal {
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::FATAL){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.get_msg(now, &msg, bt_logger::LogLevel::FATAL, &module,$function_name)
@@ -129,7 +129,7 @@ macro_rules! get_error {
     ($function_name:expr, $($arg:tt)+) => {{
         if let Some(log) = bt_logger::get_logger(){ //fail silently
             if log.log_this(bt_logger::LogLevel::ERROR){
-                let now = time::OffsetDateTime::now_utc();
+                let now = $crate::_bt_loggter_crate_time::OffsetDateTime::now_utc();
                 let module = module_path!().to_owned();
                 let msg =  std::fmt::format(format_args!($($arg)+));
                 log.get_msg(now, &msg, bt_logger::LogLevel::ERROR, &module,$function_name)

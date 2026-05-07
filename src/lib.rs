@@ -46,6 +46,9 @@
 /// The log output is:
 /// TAG APPLICATION CURRENT_UTC_TIME(YYYY-mm-ddTHH:MM:SS.3fz) level(one capital letter) source(module path::function)|>|message
 
+    #[doc(hidden)]
+    pub use time as _bt_loggter_crate_time;
+    
     pub(crate) mod io_utils;
 
     use std::path::PathBuf;
