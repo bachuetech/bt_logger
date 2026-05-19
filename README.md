@@ -47,7 +47,9 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Move from chrono to time crate.
     * Update Dependencies
 * 0.3.5
-    * Add internal time crate (re-exports time as _bt_loggter_crate_time), no required imports in caller.  
+    * Add internal time crate (re-exports time as _bt_loggter_crate_time), no required imports in caller. 
+* 0.4.0
+    * Clippy recomended changes. Braking change: rename public function from_str to from_string
 
 
 ## License

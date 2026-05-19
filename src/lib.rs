@@ -45,9 +45,8 @@
 /// 
 /// The log output is:
 /// TAG APPLICATION CURRENT_UTC_TIME(YYYY-mm-ddTHH:MM:SS.3fz) level(one capital letter) source(module path::function)|>|message
-
     #[doc(hidden)]
-    pub use time as _bt_loggter_crate_time;
+    pub use time as _bt_logger_crate_time;
     
     pub(crate) mod io_utils;
 
@@ -149,7 +148,7 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
     }
     
     impl LogTarget {
-        pub fn from_str(log_destination: &str) -> LogTarget{
+        pub fn from_string(log_destination: &str) -> LogTarget{
             match log_destination.to_uppercase().as_str(){
                 "ERR" | "ERROR" | "STDERR" | "E" => LogTarget::STD_ERROR,
                 "STANDARD" | "STD" | "STDOUT" | "S" | "O" => LogTarget::STD_OUT,
@@ -177,8 +176,8 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         ///Creates a new logger instance with the given configuration.
         ///If file cannot be open then it will be ignored as None.
         fn new(tag: &str, application: &str, level: LogLevel, output:LogTarget, destination_file: Option<String>) -> Self{
-            let dest = if destination_file.is_some() {
-                match PathBuf::from_str(&destination_file.unwrap()){
+            let dest = if let Some(dst_file) = destination_file {
+                match PathBuf::from_str(&dst_file){
                     Ok(file_path) => {
                                 //if let Some(fp) = file_path.to_str(){
                                 if let Some(parent) = file_path.parent() {
@@ -191,7 +190,7 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
 
             Logger { log_tag: tag.to_owned(), log_app: application.to_owned(),
                      current_log_level_value: level as u8, output_destination: output,
-                     destination_file: dest.into() }
+                     destination_file: dest }
         }
     
         ///Returns the current time as a string in the format "YYYY-MM-DDTHH:MM:SS.SSSZ".
@@ -231,8 +230,8 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         ///Get formatted message with the given level, message, and module and function name.
         pub fn get_msg(&self, now: OffsetDateTime, msg: &String, level: LogLevel, module: &str, function: &str) -> String { //source: &str){
             let formated_time = now.format(TIMESTAMP_FORMAT).unwrap_or(now.to_string());
-            let log_msg = self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, function), msg);
-            log_msg
+            self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, function), msg)
+            //log_msg
         }
 
         //Check if a particular log_level has to be logged based on the currect configuration
@@ -291,17 +290,16 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
 /// * `output`:  An enum default target to output logs to (e.g. standard error, file, etc.).
 /// * `path_file`: Optional Absolute path to the file to log as String. If path is invalid or file cannot be open then is ignored
     pub fn build_logger_env(tag: &str, application: &str, level: LogLevel, output:LogTarget, path_file: Option<String>){
-        let int_level: LogLevel;
-        let int_dest: LogTarget;
-        match env::var(LOG_ENV_VAR_LOG_LEVEL){
-            Ok(levll) => int_level = LogLevel::from_str(&levll),
-            Err(_) => int_level = level,
-        }
+        
+        let int_level: LogLevel = match env::var(LOG_ENV_VAR_LOG_LEVEL){
+            Ok(levll) => LogLevel::from_str(&levll),
+            Err(_) => level,
+        };
 
-        match env::var(LOG_ENV_VAR_LOG_OUTPUT){
-            Ok(levlo) => int_dest = LogTarget::from_str(&levlo),
-            Err(_) => int_dest = output,
-        }
+        let int_dest: LogTarget = match env::var(LOG_ENV_VAR_LOG_OUTPUT){
+            Ok(levlo) => LogTarget::from_string(&levlo),
+            Err(_) => output,
+        };
 
 
         build_logger(tag, application, int_level, int_dest, path_file);
@@ -323,11 +321,11 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
 /// * `tag`: The tag or identifier for the logger.
 /// * `application`: The application name associated with the logger.
 /// * `args`: A vector of strings containing key-value pairs for configuring the logger. The keys are "LOGLVL" or "LOGDST". They set: 
-///           LOGLVL: the log level (level)
-///           LOGDST: output target (out_target)
-///           LOGFILE: Absolute path to the file to log as String
+///     * LOGLVL: the log level (level)
+///     * LOGDST: output target (out_target)
+///     * LOGFILE: Absolute path to the file to log as String
     pub fn build_logger_args(tag: &str, application: &str, args: &Vec<String>){
-        if args.len() < 1{
+        if args.is_empty() {
             //build_logger(tag, application, LogLevel::ERROR, LogTarget::STD_ERROR, None );
             #[cfg(debug_assertions)]
                 build_logger(tag, application, LogLevel::VERBOSE, LogTarget::STD_OUT, None);
@@ -346,18 +344,18 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
 
             let mut dest_file = None;
             for param in args{
-                match param.split_once("="){
-                    Some(t) => {
+                //match param.split_once("="){
+                //    Some(t) => {
+                if let Some(t) = param.split_once("=") {
                         match t.0.to_uppercase().as_str() {
                             "LOGLVL" => level = LogLevel::from_str(t.1),
-                            "LOGDST" => out_target = LogTarget::from_str(t.1),
+                            "LOGDST" => out_target = LogTarget::from_string(t.1),
                             "LOGFILE" => dest_file = Some(t.1.to_owned()),
                             _ => (),
                         }
-                    }
-                    None => () ,
                 }
-
+                //    None => () ,
+                //}
             }
             build_logger_env(tag, application, level, out_target, dest_file);
         }
@@ -367,7 +365,7 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         /*let _logger = LOGGER.lock().unwrap();
         _logger.clone().unwrap()*/
         if LOGGER.get().is_some() {
-            return Some(LOGGER.get().unwrap().clone())
+            Some(LOGGER.get().unwrap().clone())
         }else{
             let l_msg = format!("{} {} {} {} {}|>|{}", "BACHUETECH", "bt_logger", Logger::get_current_time(time::OffsetDateTime::now_utc()), LogLevel::WARN, "get_logger", "BT Logger is not initialized");
             println!("{}", l_msg);
