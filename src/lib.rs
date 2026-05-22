@@ -207,9 +207,16 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         }
    
         ///Logs a message with the given level, message, and module and function name.
-        pub fn log_msg(&self, now: OffsetDateTime, msg: &String, level: LogLevel, module: &str, function: &str){ //source: &str){
+        pub fn log_msg(&self, now: OffsetDateTime, msg: &String, level: LogLevel, module: &str, section: &str){ //source: &str){
            let formated_time = now.format(TIMESTAMP_FORMAT).unwrap_or(now.to_string());
-           let log_msg = self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, function), msg);
+           let s = section.trim();
+           let log_msg = 
+                        if s.is_empty() {
+                                self.get_formatted_msg(formated_time, level, module, msg)
+                        }else{
+                                self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, s), msg)
+                        };
+
            let output_dest = self.output_destination.clone();
            let dest_file = self.destination_file.clone();
 
@@ -230,7 +237,12 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         ///Get formatted message with the given level, message, and module and function name.
         pub fn get_msg(&self, now: OffsetDateTime, msg: &String, level: LogLevel, module: &str, function: &str) -> String { //source: &str){
             let formated_time = now.format(TIMESTAMP_FORMAT).unwrap_or(now.to_string());
-            self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, function), msg)
+            let s = function.trim();
+            if s.is_empty() {
+                self.get_formatted_msg(formated_time, level, module, msg)
+            }else {
+                self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, s), msg)
+            }
             //log_msg
         }
 

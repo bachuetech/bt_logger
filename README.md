@@ -2,16 +2,16 @@
 BT Logger
 
 ## Description
-A simple and lightweight logger for Rust with various features such as logging to different output destinations (stdout, stderr), formatting log messages, and level checking.
+A simple and lightweight logger for Rust with various features such as logging to different output destinations (stdout, stderr, file), formatting log messages, and level checking.
 
 ## Usage
 To use the bt_logger module, you would create a logger instance with the desired configuration and then use the macros to log messages at different levels. For example:
 ```
 build_logger("BACHUETECH", "My Application", LogLevel::INFO, LogTarget::StdOut, Some("../bt_logs/bachuetech_log.log".to_owned()) );
  .......
-log_info!("function_name","Hello, {}", "Bachuetech User");
+log_info!("section_name","Hello, {}", "Bachuetech User");
  .......
-let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
+let msg = get_fatal!("validation_5","FATAL from {}","BT Logger");
 ```
 
 ## Version History
@@ -50,6 +50,9 @@ let msg = get_fatal!("test_level","FATAL from {}","BT Logger");
     * Add internal time crate (re-exports time as _bt_loggter_crate_time), no required imports in caller. 
 * 0.4.0
     * Clippy recomended changes. Braking change: rename public function from_str to from_string
+* 0.5.0
+    * Convert the function parameter to a section name in any log macro. The full function (module) will be populated automatically. If the section name is empty (""), nothing is added to the module name (old function).
+    * Move get time now as soon as it inters the macro to increase accuracy.
 
 
 ## License
