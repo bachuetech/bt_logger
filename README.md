@@ -53,7 +53,9 @@ let msg = get_fatal!("validation_5","FATAL from {}","BT Logger");
 * 0.5.0
     * Convert the function parameter to a section name in any log macro. The full function (module) will be populated automatically. If the section name is empty (""), nothing is added to the module name (old function).
     * Move get time now as soon as it inters the macro to increase accuracy.
-
+* 0.6.0
+    * Add Notice Log. Change the way to set None to 'O' or '0'
+    * Update time dependency
 
 ## License
 GPL-3.0-only

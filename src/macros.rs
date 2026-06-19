@@ -9,6 +9,21 @@ macro_rules! module_name {
 
 ///Log a Fatal Error. log_fatal!(function name, message, message arguments)
 #[macro_export]
+macro_rules! log_notice {
+    ($function_name:expr, $($arg:tt)+) => {{
+        let now = $crate::_bt_logger_crate_time::OffsetDateTime::now_utc();
+        if let Some(log) = bt_logger::get_logger(){ //fail silently
+            if log.log_this(bt_logger::LogLevel::NOTICE){
+                let module = $crate::module_name!(); //module_path!().to_owned();
+                let msg =  std::fmt::format(format_args!($($arg)+));
+                log.log_msg(now, &msg, bt_logger::LogLevel::NOTICE, &module,$function_name);
+            }
+        }
+    }};
+}
+
+///Log a Fatal Error. log_fatal!(function name, message, message arguments)
+#[macro_export]
 macro_rules! log_fatal {
     ($function_name:expr, $($arg:tt)+) => {{
         let now = $crate::_bt_logger_crate_time::OffsetDateTime::now_utc();

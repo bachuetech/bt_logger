@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod logger_tests_macros {
-    use bt_logger::{LogLevel, LogTarget, build_logger, get_error, get_fatal, log_debug, log_error, log_fatal, log_info, log_trace, log_verbose, log_warning};
+    use bt_logger::{LogLevel, LogTarget, build_logger, get_error, get_fatal, log_debug, log_error, log_fatal, log_info, log_notice, log_trace, log_verbose, log_warning};
 
     #[test]
     fn test_all_macros(){
@@ -12,6 +12,7 @@ mod logger_tests_macros {
         log_info!("sec1","Test Sec1");
         log_trace!("sec1","Test Sec1");
         log_warning!("sec1","Test Sec1");
+        log_notice!("sec1","Test Sec1");
     }
 
     #[test]
@@ -31,6 +32,7 @@ mod logger_tests_macros {
         log_info!("","Test No Section");
         log_trace!("","Test No Section");
         log_warning!("","Test No Section");
+        log_notice!("","Test No Section");        
     }  
 
     #[test]

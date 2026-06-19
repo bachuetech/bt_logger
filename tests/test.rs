@@ -6,6 +6,15 @@ mod logger_tests {
     use regex::Regex;
 
     #[test]
+    fn test_get_error_msg_no_init_success(){
+        println!("test {} GET Msg",LogLevel::ERROR);
+    
+        let msg = get_error!("test_level","ERROR MSG from {}","BT Logger");        
+        println!("test_get_error_msg_werr Msg: '{}'", &msg);
+        assert_eq!(msg,"");
+    }
+
+    #[test]
     fn test_info_both(){
         println!("test {} {:?}",LogLevel::VERBOSE, LogTarget::STD_BOTH);
         build_logger("BACHUETECH", "LOGGER.TEST", LogLevel::VERBOSE, LogTarget::STD_BOTH, None );        
@@ -83,14 +92,5 @@ mod logger_tests {
         let msg = get_error!("test_level","ERROR MSG from {}","BT Logger");        
         println!("test_get_error_msg_werr Msg: {:?}", &msg);
         assert!(Regex::new(pattern).unwrap().is_match( &msg ) );
-    }    
-
-    #[test]
-    fn test_get_error_msg_no_init_success(){
-        println!("test {} GET Msg",LogLevel::ERROR);
-    
-        let msg = get_error!("test_level","ERROR MSG from {}","BT Logger");        
-        println!("test_get_error_msg_werr Msg: '{}'", &msg);
-        assert_eq!(msg,"");
-    }       
+    }           
 }

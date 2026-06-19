@@ -81,8 +81,9 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
 /// LogLevel
 /// Represents the different levels of log severity. The values are ordered from lowest to highest severity.
 /// NONE = No logging,
-/// FATAL = Fatal error,
-/// ERROR = Error message,
+/// NOTICE = An informational announcement.
+/// FATAL  = Fatal error,
+/// ERROR  = Error message,
 /// WARN = Warning message,
 /// INFO = Informational message,
 /// DEBUG = Debugging message,
@@ -92,6 +93,7 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
     #[derive(Clone)]
     pub enum LogLevel{
         NONE = 100,
+        NOTICE = 70,
         FATAL = 60,
         ERROR = 50,
         WARN = 40,
@@ -104,7 +106,8 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
     impl fmt::Display for LogLevel{
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             match *self{
-                LogLevel::NONE    => write!(f, "N"),
+                LogLevel::NONE    => write!(f, "O"),
+                LogLevel::NOTICE  => write!(f, "N"),
                 LogLevel::FATAL   => write!(f, "F"),
                 LogLevel::ERROR   => write!(f, "E"),
                 LogLevel::WARN    => write!(f, "W"),
@@ -119,7 +122,8 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
     impl LogLevel {
         fn from_str(log_level: &str) -> LogLevel{
             match log_level.to_uppercase().as_str(){
-                "N" | "NONE" => LogLevel::NONE,
+                "O" | "0" | "NONE" => LogLevel::NONE,
+                "N" | "NOTICE" => LogLevel::NOTICE,
                 "F" | "FATAL" => LogLevel::FATAL,
                 "E" | "ERR" | "ERROR" => LogLevel::ERROR,
                 "W" | "WARN" | "WARNING"=> LogLevel::WARN,
