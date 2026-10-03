@@ -56,6 +56,8 @@ let msg = get_fatal!("validation_5","FATAL from {}","BT Logger");
 * 0.6.0
     * Add Notice Log. Change the way to set None to 'O' or '0'
     * Update time dependency
+* 0.6.1
+    * Update dependencies
 
 ## License
 GPL-3.0-only
