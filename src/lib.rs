@@ -53,7 +53,6 @@
     use std::path::PathBuf;
     use std::str::FromStr;
     use std::{env, fmt, fs};
-    //use chrono::prelude::*;
     use once_cell::sync::{Lazy, OnceCell};
     use time::OffsetDateTime;
     use time::macros::format_description;
@@ -247,7 +246,6 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
             }else {
                 self.get_formatted_msg(formated_time, level, &format!("{}::{}",module, s), msg)
             }
-            //log_msg
         }
 
         //Check if a particular log_level has to be logged based on the currect configuration
@@ -259,10 +257,6 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         }
     }
     
-    /*lazy_static! {
-        static ref LOGGER: Mutex<Option<Logger>> = Mutex::new(None);
-    }*/
-
     ///Logs a message to stdout.
     fn log_stdout(message: &String ){
         println!("{}", message);
@@ -377,11 +371,12 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
         }
     }
 
-    pub fn get_logger() -> Option<Logger>{
+    pub fn get_logger() -> Option<&'static Logger>{
         /*let _logger = LOGGER.lock().unwrap();
         _logger.clone().unwrap()*/
         if LOGGER.get().is_some() {
-            Some(LOGGER.get().unwrap().clone())
+            //Some(LOGGER.get().unwrap().clone())
+            Some(LOGGER.get().unwrap())
         }else{
             let l_msg = format!("{} {} {} {} {}|>|{}", "BACHUETECH", "bt_logger", Logger::get_current_time(time::OffsetDateTime::now_utc()), LogLevel::WARN, "get_logger", "BT Logger is not initialized");
             println!("{}", l_msg);

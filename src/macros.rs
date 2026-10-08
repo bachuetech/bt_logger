@@ -7,7 +7,7 @@ macro_rules! module_name {
     }};
 }
 
-///Log a Fatal Error. log_fatal!(function name, message, message arguments)
+///Log a Notice. It always show except if None. log_notice!(function name, message, message arguments)
 #[macro_export]
 macro_rules! log_notice {
     ($function_name:expr, $($arg:tt)+) => {{
