@@ -60,6 +60,8 @@ let msg = get_fatal!("validation_5","FATAL from {}","BT Logger");
     * Update dependencies
 * 0.6.2
     * Clean code. Minor change in get_loger: Instead of cloning the Logger instance each time get_logger is called, it's better to return a reference to the Logger. This avoids unnecessary cloning and is safe because the Logger is immutable after it's created.
+* 0.6.3
+    * Update dependencies. Internal change when getting the logger. A new function is not included in the release version: log_verbose_dev
 
 ## License
 GPL-3.0-only

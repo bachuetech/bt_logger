@@ -372,11 +372,12 @@ static LOGGER: OnceCell<Logger> = OnceCell::new();
     }
 
     pub fn get_logger() -> Option<&'static Logger>{
-        /*let _logger = LOGGER.lock().unwrap();
-        _logger.clone().unwrap()*/
-        if LOGGER.get().is_some() {
+        //if LOGGER.get().is_some() { //ToDo: Change this if for: if let Some(logger) = LOGGER.get() { return Some(logger); } else .....
             //Some(LOGGER.get().unwrap().clone())
-            Some(LOGGER.get().unwrap())
+        //    Some(LOGGER.get().unwrap())
+
+        if let Some(logger) = LOGGER.get() { 
+            return Some(logger); 
         }else{
             let l_msg = format!("{} {} {} {} {}|>|{}", "BACHUETECH", "bt_logger", Logger::get_current_time(time::OffsetDateTime::now_utc()), LogLevel::WARN, "get_logger", "BT Logger is not initialized");
             println!("{}", l_msg);

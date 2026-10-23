@@ -134,6 +134,29 @@ macro_rules! log_verbose {
     }};
 }    
 
+///Very verbose message only when using or compile in debug.
+/// If compile in release:
+/// * No logging will occur.
+/// * The format_args! and string formatting won't be evaluated, meaning zero performance overhead for the log call.
+/// * The macro will output nothing, leaving the function call site completely empty.
+///  log_verbose!(function name, message, message arguments)
+#[macro_export]
+macro_rules! log_verbose_dev {
+    ($function_name:expr, $($arg:tt)+) => {
+        #[cfg(debug_assertions)]
+        {
+            let now = $crate::_bt_logger_crate_time::OffsetDateTime::now_utc();
+            if let Some(log) = bt_logger::get_logger(){ //fail silently
+                if log.log_this(bt_logger::LogLevel::VERBOSE){
+                    //let now = $crate::_bt_logger_crate_time::OffsetDateTime::now_utc();
+                    let module = $crate::module_name!(); //module_path!().to_owned();
+                    let msg =  std::fmt::format(format_args!($($arg)+));
+                    log.log_msg(now, &msg, bt_logger::LogLevel::VERBOSE, &module,$function_name);
+                }
+            }
+        }
+    };
+}   
 
 ///Get a Fatal Error Message. get_fatal!(function name, message, message arguments)
 #[macro_export]
